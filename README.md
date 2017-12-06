@@ -20,7 +20,7 @@
 
 ## 1. Create an Azure Functions project
 
-This exercise will introduce you to Azure Functions and the ability to emulate storage and debug locally. The Azure Functions host makes it possible to run a fully function version of the functions host on your development machine.
+This exercise introduces you to Azure Functions along with the ability to emulate storage and debug functions locally. The Azure Functions host makes it possible to run a full version of the functions host on your development machine.
 
 ### Prerequisites
 
@@ -46,7 +46,7 @@ This exercise will introduce you to Azure Functions and the ability to emulate s
 6. In the next dialog, choose the `Blob trigger` template. You can leave `Connection` blank or populate it with `AzureWebJobsStorage`. Type `import` for the `Path`.
 
     ![Blob Trigger](media/step-01-05-blob-trigger.png)
-7. When class is created, ensure it looks like this (if you did not fill out the `Connection` in the previous step, you can add it here):
+7. After the class is created, ensure it looks like this (if you did not fill out the `Connection` in the previous step, you can add it here):
 
     ```csharp
     namespace FileProcessor
@@ -84,21 +84,77 @@ This exercise will introduce you to Azure Functions and the ability to emulate s
 
 ### Steps
 
+1. Launch the Storage Emulator by following the directions [here](#link).
+2. Open Storage Explorer and navigate to `Blob Containers` in developer storage.
 
+    ![Blob Containers](media/step-02-01-blob-containers.png)
+3. Right-click on `Blob Containers` and choose `Create Blob Container`. This will open a node that you can type the name for the container: `import`. Hit `ENTER` and the container details will load.
+
+    ![Import Container](media/step-02-02-new-container.png)
+4. In Visual Studio, click the debug button or press F5 to start debugging.
+
+    ![Launch Debug](media/step-02-03-debug.png)
+5. Wait for the functions host to start running. The console will show the text `Debugger listening on [::]:5858` (your port may be different.)
+6. In the Storage Explorer window for the `import` container, click the `Upload` button and choose the `Upload folder...` option.
+
+    ![Upload Folder](media/step-02-04-upload-folder.png)
+7. In the Upload Folder dialog, select the `data` folder that is provided with this hands-on lab. Make sure `Blob type` is set to `Block blob` and `Upload to folder (optional)` is empty. Click `Upload`.
+
+    ![Select Folder](media/step-02-05-select-folder.png)
+8. Confirm the files in the folder were processed by checking the logs in the function host console window.
+
+    ![Confirm Upload](media/step-02-06-confirm-upload.png)
+9. Stop the debugging session
 
 <a name="exercise3"></a>
 
 ## 3. Create the SQL Database
 
+This exercise walks through creating the local SQL database for testing. 
+
+### Prerequisites
+
+* SQL Server Express (full version is fine)
+* SQL Server Management Studio (SSMS)
+
+### Steps 
+
+1. Open SQL Server Management Studio and connect to your local server instance.
+2. Right-click on the `Databases` node and choose `New Database...`
+
+    ![Create New Database](media/step-03-01-create-database.png)
+3. For the `Database name` type `todo`. Adjust any other settings you desire and click `OK`.
+
+    ![Name the Database](media/step-03-02-todo.png)
+4. Right-click on the `todo` database and choose `New Query`. In the window that opens, type the following:
+
+    ```SQL
+    CREATE TABLE TodoList (Id Int Identity, Task NVarChar(max), IsComplete Bit);
+    INSERT TodoList(Task, IsComplete) VALUES ('Insert first record', 1);
+    SELECT * FROM TodoList;
+    ```
+5. Confirm that a single result is returned with "Insert first record" as the task.
+
 <a name="exercise4"></a>
 
 ## 4. Add and test the code to update the database
+
+The local database is ready to test. In this exercise, you will use Entity Framework to insert the records you parse from the uploaded files into the SQL database.
+
+### Steps 
+
+1. Add the connection string for SQL Server to `local.json.settings`. It should look like this:
+
 
 <a name="exercise5"></a>
 
 ## 5. Create the Azure SQL Database
 
-The first exercise will create an Azure SQL database in the cloud. This exercise uses the [Azure Portal](https://jlik.me/b7b).
+The first exercise will create an Azure SQL database in the cloud. This exercise uses the [Azure portal](https://jlik.me/b7b).
+
+### Prerequisites
+
+* Azure Subscription
 
 ### Steps
 
@@ -112,7 +168,7 @@ The first exercise will create an Azure SQL database in the cloud. This exercise
 5. Click `Configure required settings` for `Server`.
 6. Select `Create new server`.
 7. Enter a unique `Server name`.
-8. Provide a login and password. ***Note:** be sure to remember these!*
+8. Provide a login and password. ***Note:** be sure to save your credentials!*
 9. Pick your preferred `Location`.
 10. Click the `Select` button.
 
