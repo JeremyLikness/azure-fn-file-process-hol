@@ -13,8 +13,7 @@
 5. [Create an Azure SQL Database](#exercise5)
 6. [Migrate the database](#exercise6)
 7. [Deploy the project to Azure](#exercise7)
-8. [Test a file with valid data](#exercise8)
-9. [Test a file with errors](#exercise9)
+8. [Test uploads](#exercise8)
 
 <a name="exercise1"></a>
 
@@ -105,6 +104,9 @@ This exercise introduces you to Azure Functions along with the ability to emulat
 
     ![Confirm Upload](media/step-02-06-confirm-upload.png)
 9. Stop the debugging session
+10. Delete the `data` folder and files from the storage emulator.
+
+The Azure Function is ready, next you will create a database and table to process the files into.
 
 <a name="exercise3"></a>
 
@@ -129,9 +131,9 @@ This exercise walks through creating the local SQL database for testing.
 4. Right-click on the `todo` database and choose `New Query`. In the window that opens, type the following:
 
     ```SQL
-    CREATE TABLE TodoList (Id Int Identity, Task NVarChar(max), IsComplete Bit);
-    INSERT TodoList(Task, IsComplete) VALUES ('Insert first record', 1);
-    SELECT * FROM TodoList;
+    CREATE TABLE TodoItems (Id Int Identity, Task NVarChar(max), IsComplete Bit);
+    INSERT TodoItems(Task, IsComplete) VALUES ('Insert first record', 1);
+    SELECT * FROM TodoItems;
     ```
 5. Confirm that a single result is returned with "Insert first record" as the task.
 
@@ -141,10 +143,135 @@ This exercise walks through creating the local SQL database for testing.
 
 The local database is ready to test. In this exercise, you will use Entity Framework to insert the records you parse from the uploaded files into the SQL database.
 
-### Steps 
+### Steps
 
-1. Add the connection string for SQL Server to `local.json.settings`. It should look like this:
+1. Add the connection string for SQL Server to `local.json.settings`. It should look like this (example assumes SQL Express):
 
+    ```JavaScript
+    {
+      "IsEncrypted": false,
+      "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "AzureWebJobsDashboard": "UseDevelopmentStorage=true"
+      },
+      "ConnectionStrings": {
+        "TodoContext": "Server=localhost\\SQLEXPRESS;Database=todo;Trusted_Connection=True;"
+      }
+    }
+    ```
+2. In Visual Studio, add a class file named `TodoItem.cs` and populate it:
+
+    ```CSharp
+    namespace FileProcessor
+    {
+        public class TodoItem
+        {
+            public long Id { get; set; }
+            public string Task { get; set; }
+            public bool IsComplete { get; set; }
+        }
+    }
+    ```
+3. Open the `Package Manager Console` (under `Tools`) and type:
+    
+    `Install-Package EntityFramework`
+4. Add another class file named `TodoContext.cs` and add the following code to define the database connections:
+
+    ```CSharp
+    using System.Data.Entity;
+    
+    namespace FileProcessor
+    {
+        public class TodoContext : DbContext
+        {
+            public TodoContext() : base("TodoContext")
+            {
+            }
+    
+            public DbSet<TodoItem> TodoItems { get; set; }
+    
+        }
+    }
+    ```
+5. Open `FileProcessFn.cs` and change the `Run` method to be asynchronous by replacing `void` with `async Task`. Be sure to add `using System.Threading.Tasks` to the top of the file.
+6. After the `log.Info` statement, add the structure for reading lines from the stream:
+
+    ```CSharp
+    if (myBlob.Length > 0)
+    {
+        using (var reader = new StreamReader(myBlob))
+        {
+            var lineNumber = 1;
+            var line = await reader.ReadLineAsync();
+            while (line != null)
+            {
+                await ProcessLine(name, line, lineNumber, log);
+                line = await reader.ReadLineAsync();
+                lineNumber++;
+            }
+        }
+    }
+    ```
+7. Implement the `ProcessLine` method:
+
+    ```CSharp
+    private static async Task ProcessLine(string name, string line, int lineNumber, TraceWriter log)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            log.Warning($"{name}: {lineNumber} is empty.");
+            return;
+        }
+
+        var parts = line.Split(',');
+        if (parts.Length != 2)
+        {
+            log.Error($"{name}: {lineNumber} invalid data: {line}.");
+            return;
+        }
+
+        var item = new TodoItem { Task = parts[0] };
+        if ((int.TryParse(parts[1], out int complete) == false) || complete < 0 || complete > 1)
+        {
+            log.Error($"{name}: {lineNumber} bad complete flag: {parts[1]}.");
+        }
+        item.IsComplete = complete == 1;
+    }
+    ```
+8. After setting the `IsComplete` flag, add the logic to check for duplicates and insert the record if it is unique:
+
+    ```CSharp
+    using (var context = new TodoContext())
+    {
+        if (context.TodoItems.Any(todo => todo.Task == item.Task))
+        {
+            log.Error($"{name}: {lineNumber} duplicate task: \"{item.Task}\".");
+            return;
+        }
+        context.TodoItems.Add(item);
+        await context.SaveChangesAsync();
+        log.Info($"{name}: {lineNumber} inserted task: \"{item.Task}\" with id: {item.Id}.");
+    }
+    ```
+9. Press `F5` to debug. In Azure Storage Explorer, upload `GoodData.csv`. You should several success messages the functions console.
+
+    ![Success](media/step-04-01-good-data.png)
+10. Upload `BadData.csv` and verify only a few records are processed and errors are printed.
+11. Open SQL Server Management Studio and run the query:
+
+    ```SQL
+    SELECT * FROM TodoItems
+    ```
+12. Verify you receive results similar to this:
+
+    ![SQL Results](media/step-04-02-sql-results.png)
+13. Delete the imported tasks by executing this SQL statement:
+
+    ```SQL
+    DELETE FROM TodoItems WHERE Id > 1
+    ``` 
+
+Now the project is successfully running locally. The next few exercises will demonstrate how to move the process to Azure.
 
 <a name="exercise5"></a>
 
@@ -173,19 +300,53 @@ The first exercise will create an Azure SQL database in the cloud. This exercise
 10. Click the `Select` button.
 
     ![Configure server](media/step-05-02-configure-server.png)
-1. Click `Pricing tier`.
-2. Slide the `DTU` bar to the lowest level for this lab.
+11. Click `Pricing tier`.
+22. Slide the `DTU` bar to the lowest level for this lab.
 
     ![Configure performance](media/step-05-03-dtu.png)
-1. Tap `Apply`.
-2. Check `Pin to dashboard`.
-3. Click `Create`.
+13. Tap `Apply`.
+14. Check `Pin to dashboard`.
+15. Click `Create`.
+16. Once the database is created, navigate to the `Overview` for your database and select `Set server firewall.`
 
-Wait for the deployment to complete (you will receive an alert) and then continue to the exercise.
+    ![Set Server Firewall](media/step-05-05-firewall.png)
+17. Click `Add client IP` to add your IP address, then click `Save`. Test that you can access the database by connecting from SQL Server Management Studio.
+
+    ![Add Client IP](media/step-05-06-add-client-ip.png)
+
+Wait for the deployment to complete (you will receive an alert) and then continue to the next exercise.
 
 <a name="exercise6"></a>
 
 ## 6. Migrate the database
+
+You can follow the steps in [Exercise 3 (Create the SQL Database)](#exercise3) to create and populate the Azure SQL tables, or you can migrate from SQL Express. If you choose to create the table yourself, you may [skip this exercise](#exercise7).
+
+### Prequisites
+
+* Microsoft Data Migration Assistant
+
+### Steps
+
+1. Open the Microsoft Data Migration Assistant
+2. Click the plus sign to start a new project, check `Migration`, give the project a name and make sure the `Source server type` is `SQL Server` and the `Target server type` is `Azure SQL` with a `Migration scope` of `Schema and data`. Click `Create`.
+
+    ![Migration Tool](media/step-06-01-new-project.png)
+3. Fill out the credentials for the source server, click `Connect`, then select the database you created in [Exercise 3](#exercise3). Click `Next`.
+
+    ![Source Server](media/step-06-02-source-server.png)
+4. Fill out the credentials for the target server (Azure SQL) and click `Connect` then select the database you created in [Exercise 5](#exercise5). Click `Next`.
+
+    ![Target Server](media/step-06-03-target-server.png)
+5. In the next dialog, make sure only `dbo.TodoItems` under `Tables` is checked and click `Generate SQL script`.
+6. The next dialog will show you SQL script to create the table. Click `Deploy schema` to deploy the table to Azure SQL.
+7. Verify the deployment was successful, then click `Migrate data`.
+8. Click `Start data migration`.
+9. Verify the migration was successful. You can test this by browsing the data in SQL Server Management Studio.
+
+    ![Successful Migration](media/step-06-04-migration-successful.png)
+
+Now that the Azure SQL database is ready, in the next exercise you will deploy the function to Azure.
 
 <a name="exercise7"></a>
 
@@ -193,8 +354,4 @@ Wait for the deployment to complete (you will receive an alert) and then continu
 
 <a name="exercise8"></a>
 
-## 8. Test a file with valid data
-
-<a name="exercise9"></a>
-
-## 9. Test a file with errors
+## 8. Test uploads
