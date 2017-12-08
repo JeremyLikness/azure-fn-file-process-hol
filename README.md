@@ -1,8 +1,10 @@
 # Use Azure Functions to process a CSV File and import data into Azure SQL
 
-> NOTE: this hands on lab is currently under development. This note will be removed when it is final.
+> NOTE: this hands on lab is currently under development. This note will be removed when it is final. This lab may be moved to a separate repository at some point. 
 
 ## Introduction
+
+Coming soon ...
 
 ## Exercises
 
