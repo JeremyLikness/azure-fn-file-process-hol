@@ -8,7 +8,7 @@ To do ...
 
 ## Background
 
-The following concepts are covered in this lab. Click on the links following to learn more about each functional area that is covered in the lab exercises.
+The following concepts are covered in this lab. Click on the following links to learn more about each functional area that is covered in the lab exercises.
 
 * [Azure for .NET Developers](https://jlik.me/cab)
 * [Azure Functions](https://jlik.me/cac)
