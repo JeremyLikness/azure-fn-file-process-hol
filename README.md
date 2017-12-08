@@ -25,14 +25,14 @@ This exercise introduces you to Azure Functions along with the ability to emulat
 
 ### Prerequisites
 
-* Visual Studio 2017 15.5 or later
+* [Visual Studio 2017 15.5](https://jlik.me/b93) or later
 * The Azure Development workload
-* Azure Functions and Web Jobs Tools (15 or later)
+* Azure Functions and Web Jobs Tools (15 or later) (*Should be installed automatically with the Azure Development workload*)
 
 ### Steps
 
 1. Open Visual Studio 2017.
-2. Select `File` then `New Project` and choose the `Azure Functions` template. Enter `FileProcessor` for the `Name`.
+2. Select `File` then `New Project` and choose the `Azure Functions` template. Enter `FileProcessor` for the `Name`. Click `OK`.
 
     ![Azure Functions Project](media/step-01-01-new-fn-project.png)
 3. In the Azure Functions dialog, choose the `Azure Functions v1 (.NET Framework)` host and select the `Empty` project template. Make sure that `Storage Emulator` is selected for the `Storage Account`. (This will automatically set up connection strings for storage emulation.) Click `OK` and wait for the project to create.
@@ -80,19 +80,19 @@ This exercise introduces you to Azure Functions along with the ability to emulat
 
 ### Prerequisites
 
-* Azure Storage Emulator
-* Azure Storage Explorer
+* [Azure Storage Emulator](https://jlik.me/b94)
+* [Azure Storage Explorer](https://jlik.me/b95)
 
 ### Steps
 
-1. Launch the Storage Emulator by following the directions [here](#link).
+1. Launch the Storage Emulator by following the directions [here](https://jlik.me/b96).
 2. Open Storage Explorer and navigate to `Blob Containers` in developer storage.
 
     ![Blob Containers](media/step-02-01-blob-containers.png)
 3. Right-click on `Blob Containers` and choose `Create Blob Container`. This will open a node that you can type the name for the container: `import`. Hit `ENTER` and the container details will load.
 
     ![Import Container](media/step-02-02-new-container.png)
-4. In Visual Studio, click the debug button or press F5 to start debugging.
+4. In Visual Studio, click the debug button or press `F5` to start debugging.
 
     ![Launch Debug](media/step-02-03-debug.png)
 5. Wait for the functions host to start running. The console will show the text `Debugger listening on [::]:5858` (your port may be different.)
@@ -108,7 +108,7 @@ This exercise introduces you to Azure Functions along with the ability to emulat
 9. Stop the debugging session
 10. Delete the `data` folder and files from the storage emulator.
 
-The Azure Function is ready, next you will create a database and table to process the files into.
+The Azure Function is ready. In the next exercise, you will create a database and table to process the files into.
 
 <a name="exercise3"></a>
 
@@ -118,8 +118,8 @@ This exercise walks through creating the local SQL database for testing.
 
 ### Prerequisites
 
-* SQL Server Express (full version is fine)
-* SQL Server Management Studio (SSMS)
+* [SQL Server Express](https://jlik.me/b97) (the full SQL Server version is fine too)
+* [SQL Server Management Studio](https://jlik.me/b98) (SSMS)
 
 ### Steps 
 
@@ -137,7 +137,10 @@ This exercise walks through creating the local SQL database for testing.
     INSERT TodoItems(Task, IsComplete) VALUES ('Insert first record', 1);
     SELECT * FROM TodoItems;
     ```
-5. Confirm that a single result is returned with "Insert first record" as the task.
+6. Click `Execute`.
+7. Confirm that a single result is returned with "Insert first record" as the task.
+
+The database is now ready. The next exercise will walk you through enhancing your function to parse the file and insert records into the database.
 
 <a name="exercise4"></a>
 
@@ -177,7 +180,7 @@ The local database is ready to test. In this exercise, you will use Entity Frame
 3. Open the `Package Manager Console` (under `Tools`) and type:
     
     `Install-Package EntityFramework`
-4. Add another class file named `TodoContext.cs` and add the following code to define the database connections:
+4. Add another class file named `TodoContext.cs` then include the following code to define the database connections. The connection string name is passed to the base class in the constructor:
 
     ```CSharp
     using System.Data.Entity;
@@ -255,7 +258,7 @@ The local database is ready to test. In this exercise, you will use Entity Frame
         log.Info($"{name}: {lineNumber} inserted task: \"{item.Task}\" with id: {item.Id}.");
     }
     ```
-9. Press `F5` to debug. In Azure Storage Explorer, upload `GoodData.csv`. You should several success messages the functions console.
+9. Press `F5` to debug. In Azure Storage Explorer, upload `GoodData.csv` to the `import` container. You should several success messages the functions console.
 
     ![Success](media/step-04-01-good-data.png)
 10. Upload `BadData.csv` and verify only a few records are processed and errors are printed.
@@ -283,7 +286,7 @@ The first exercise will create an Azure SQL database in the cloud. This exercise
 
 ### Prerequisites
 
-* Azure Subscription
+* [Azure Subscription](https://jlik.me/b99)
 
 ### Steps
 
@@ -322,11 +325,11 @@ Wait for the deployment to complete (you will receive an alert) and then continu
 
 ## 6. Migrate the database
 
-You can follow the steps in [Exercise 3 (Create the SQL Database)](#exercise3) to create and populate the Azure SQL tables, or you can migrate from SQL Express. If you choose to create the table yourself, you may [skip this exercise](#exercise7).
+You can follow the steps in [Exercise 3 (Create the SQL Database)](#exercise3) to create and populate the Azure SQL tables, or you can migrate from your local SQL instance. If you choose to create the table yourself, you may [skip this exercise](#exercise7).
 
 ### Prequisites
 
-* Microsoft Data Migration Assistant
+* [Microsoft Data Migration Assistant](https://jlik.me/caa)
 
 ### Steps
 
@@ -348,11 +351,13 @@ You can follow the steps in [Exercise 3 (Create the SQL Database)](#exercise3) t
 
     ![Successful Migration](media/step-06-04-migration-successful.png)
 
-Now that the Azure SQL database is ready, in the next exercise you will deploy the function to Azure.
+Now that the Azure SQL database is ready, you will learn how to deploy the function to Azure.
 
 <a name="exercise7"></a>
 
 ## 7. Deploy the project to Azure
+
+In this exercise you will use the built-in Visual Studio tools to create a function app and app service plan and deploy your function to the cloud.
 
 1. Inside Visual Studio, from the Solution Explorer right-click on the project name and choose `Publish...`.
 
@@ -360,7 +365,7 @@ Now that the Azure SQL database is ready, in the next exercise you will deploy t
 2. Choose `Azure Function App`, check `Create New` and click `Publish`.
 
     ![Publish Prompt](media/step-07-02-function-app.png)
-3. Give the app a unique name, choose your `Subscription` and select the same `Resource Group` that you used for the Azure SQL Server. For `App Service Plan` click `New...`.
+3. Give the app a unique name, choose your `Subscription` and select the same `Resource Group` that you used for the [Azure SQL Server](#exercise5). For `App Service Plan` click `New...`.
 
     ![Create App Service](media/step-07-03-app-name.png)
 4. Give the plan a unique name, choose the `Location` and pick `Consumption` for the `Size`. Click `OK`.
@@ -376,11 +381,13 @@ Now that the Azure SQL database is ready, in the next exercise you will deploy t
 8. Navigate to the function app in the portal. Click `Application settings.`
 
     ![Application Settings](media/step-07-07-application-settings.png)
-9. Scroll to the `Connection strings` section. Click `+ Add new connection string`. Type `TodoContext` for the name, paste the value from step 7 (be sure to update `{your_username}` and `{your_password}` to the correct values), and set ithe type to SQL Azure.
+9. Scroll to the `Connection strings` section. Click `+ Add new connection string`. Type `TodoContext` for the name, paste the value from step 7 (be sure to update `{your_username}` and `{your_password}` to the correct values), and set the type to `SQLAzure`.
 
     ![Connection String](media/step-07-08-connection-strings.png)
 10. Above the `Connection strings` section is `Application settings`. Note the `AccountName` from the `AzureWebJobsStorage` entry. This is the storage account name.
 11. Scroll to the top and click `Save`.
+
+Everything has been deployed and configured in Azure. In the next step, you will create the `import` container and upload files to test the cloud implementation.
 
 <a name="exercise8"></a>
 
