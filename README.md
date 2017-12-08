@@ -352,6 +352,62 @@ Now that the Azure SQL database is ready, in the next exercise you will deploy t
 
 ## 7. Deploy the project to Azure
 
+1. Inside Visual Studio, from the Solution Explorer right-click on the project name and choose `Publish...`.
+
+    ![Publish](media/step-07-01-publish.png)
+2. Choose `Azure Function App`, check `Create New` and click `Publish`.
+
+    ![Publish Prompt](media/step-07-02-function-app.png)
+3. Give the app a unique name, choose your `Subscription` and select the same `Resource Group` that you used for the Azure SQL Server. For `App Service Plan` click `New...`.
+
+    ![Create App Service](media/step-07-03-app-name.png)
+4. Give the plan a unique name, choose the `Location` and pick `Consumption` for the `Size`. Click `OK`.
+
+    ![Configure App Service Plan](media/step-07-04-configure.png)
+5. Back in the `Create App Service` dialog, click `Create`.
+
+     ![Create](media/step-07-05-create.png)
+6. The publish will show build output and you will see `Publish completed.` when it's done.
+7. Open your Azure SQL Database in the Azure Portal and navigate to `Connection Strings`. Copy the connection string for `ADO.NET`.
+
+    ![Connection Strings](media/step-07-06-connection-string.png)
+8. Navigate to the function app in the portal. Click `Application settings.`
+
+    ![Application Settings](media/step-07-07-application-settings.png)
+9. Scroll to the `Connection strings` section. Click `+ Add new connection string`. Type `TodoContext` for the name, paste the value from step 7 (be sure to update `{your_username}` and `{your_password}` to the correct values), and set ithe type to SQL Azure.
+
+    ![Connection String](media/step-07-08-connection-strings.png)
+10. Above the `Connection strings` section is `Application settings`. Note the `AccountName` from the `AzureWebJobsStorage` entry. This is the storage account name.
+11. Scroll to the top and click `Save`.
+
 <a name="exercise8"></a>
 
 ## 8. Test uploads
+
+Now the function app is deployed and configured. This last exercise will help you create a blog container, upload the file, and test the processing trigger.
+
+1. Navigate to the storage account from step 10. It should be the only storage account in your resource group. Click on `Blobs`.
+
+    ![Blobs](media/step-08-01-storage.png)
+2. From the Blob service page, click `+ Container` to add a new container.
+
+    ![New Container](media/step-08-02-add-container.png)
+3. Type `import` for the name, leave `Public access level` at `Private (no anonymous access)` and click `OK`.
+
+    ![Import](media/step-08-03-import.png)
+4. Once the container is created, click on the container name (`import`) to open the container, then click `Upload`.
+
+    ![Upload](media/step-08-04-upload.png)
+5. Click the folder to browse to the `GoodData.csv` file, choose the file and click `Upload`.
+
+    ![GoodData](media/step-08-05-file-selection.png)
+6. Navigate back to the function app and click `Monitor`.
+
+    ![Monitor](media/step-08-06-monitor.png)
+7. Wait for the logs to appear (use the refresh button if necessary). After the log appears, click on the log entry to view the log information and verify the data was inserted.
+
+    ![Verify](media/step-08-07-logs.png)
+8. Use SQL Server Management Server to verify the records.
+9. Repeat steps 4 - 7 with the `BadData.csv` file.
+
+Congratulations! You have successfully completed this lab to create a serverless function that imports files into a SQL database.
