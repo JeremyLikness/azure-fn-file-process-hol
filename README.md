@@ -1,10 +1,12 @@
 # Use Azure Functions to process a CSV File and import data into Azure SQL
 
-> NOTE: this hands on lab is currently under development. This note will be removed when it is final. This lab may be moved to a separate repository at some point.
+> NOTE: this tutorial is currently under development. This note will be removed when it is final. This lab may be moved to a separate repository at some point.
 
 ## Introduction
 
-To do ...
+Extract, Transform, and Load (ETL) is a common business function that is often necessary for integration between different systems. Traditional approaches often involve setting up dedicated FTP servers then deploying scheduled jobs to parse files and translate them for business use. Serverless architecture makes the job easier because a trigger can fire when the file is uploaded. Azure Functions is small pieces of code that focus on a specific problem and are ideal for tackling tasks like ETL.
+
+This tutorial demonstrates how to take a legacy process and migrate it to run 100% in the cloud using the Azure SQL Database-as-a-Service offering combined with Azure Functions. You start with a local development environment, build and test the process end-to-end, then create the cloud-based assets and deploy to Azure.
 
 ## Background
 
@@ -114,7 +116,7 @@ Now you've successfully created a function. The next exercise will walk through 
 6. In the Storage Explorer window for the `import` container, click the `Upload` button and choose the `Upload folder...` option.
 
     ![Upload Folder](media/step-02-04-upload-folder.png)
-7. In the Upload Folder dialog, select the `data` folder that is provided with this hands-on lab. Make sure `Blob type` is set to `Block blob` and `Upload to folder (optional)` is empty. Click `Upload`.
+7. In the Upload Folder dialog, select the `data` folder that is provided with this tutorial. Make sure `Blob type` is set to `Block blob` and `Upload to folder (optional)` is empty. Click `Upload`.
 
     ![Select Folder](media/step-02-05-select-folder.png)
 8. Confirm the files in the folder were processed by checking the logs in the function host console window.
