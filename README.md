@@ -1,5 +1,7 @@
 # Use Azure Functions to process a CSV File and import data into Azure SQL
 
+![No longer maintained](https://img.shields.io/maintenance/no/2020)
+
 Extract, Transform, and Load (ETL) is a common business function that is often necessary for integration between different systems. Traditional approaches often involve setting up dedicated FTP servers then deploying scheduled jobs to parse files and translate them for business use. Serverless architecture makes the job easier because a trigger can fire when the file is uploaded. Azure Functions is small pieces of code that focus on a specific problem and are ideal for tackling tasks like ETL.
 
 This tutorial demonstrates how to take a legacy process and migrate it to run 100% in the cloud using the Azure SQL Database-as-a-Service offering combined with Azure Functions. You start with a local development environment, build and test the process end-to-end, then create the cloud-based assets and deploy to Azure.
